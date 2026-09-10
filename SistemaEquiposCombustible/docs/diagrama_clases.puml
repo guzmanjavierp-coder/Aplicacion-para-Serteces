@@ -1,0 +1,28 @@
+@startuml
+class Categoria
+class Equipo
+class Mantenimiento
+class Reparacion
+class TipoCombustible
+class MovimientoCombustible
+class GestionCategorias
+class GestionEquipos
+class GestionMantenimientos
+class GestionReparaciones
+class GestionTiposCombustible
+class GestionCombustible
+class GestionAlertas
+
+Categoria "1" <-- "0..*" Equipo : codigoCategoria
+Equipo "1" <-- "0..*" Mantenimiento : codigoEquipo
+Equipo "1" <-- "0..*" Reparacion : codigoEquipo
+TipoCombustible "1" <-- "0..*" MovimientoCombustible : codigoTipoCombustible
+GestionCategorias ..> Categoria
+GestionEquipos ..> Equipo
+GestionMantenimientos ..> Mantenimiento
+GestionReparaciones ..> Reparacion
+GestionTiposCombustible ..> TipoCombustible
+GestionCombustible ..> MovimientoCombustible
+GestionAlertas ..> GestionTiposCombustible
+GestionAlertas ..> GestionCombustible
+@enduml
