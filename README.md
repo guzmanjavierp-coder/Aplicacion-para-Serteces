@@ -3,3 +3,5 @@
 
 
 Este es un sistema de gestión de equipos y combustible, diseñado para la compañía Serteces,Permite manejar equipo, mantenimientos, reparaciones, tipos de combustibles, y movimientos de combustibles. Tiene un robusto sistema de inventario, que permite crear categorías, identificar productos por medio de un ID único, y generar alertas de bajo inventario. Permite ingresar información sobre los productos dentro de inventario, como código, nombre, descripción, categoría, cantidad, ubicación física, estado y persona responsable.
+
+![Imagen de la aplicación](Screenshot_20260915_124939.png)
