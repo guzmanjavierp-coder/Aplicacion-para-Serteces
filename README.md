@@ -4,9 +4,10 @@
 > inventario y combustible de la compañía Serteces, proyecto para la clase de Programación Orientada a Objetos en la UNIS.
 
 ## Miembros del Grupo
--Javier Guzman
--Agustín Illescas
--Esteban Mesa
+
+- Javier Guzman
+- Agustín Illescas
+- Esteban Mesa
 
 ## Descripción
 
@@ -44,7 +45,6 @@ incluyendo:
 - **Persona responsable**
 
 ## Imagen de la aplicación
-![Aplicación con todas sus ventanas abiertas] (Ventanas.png)
 
 ![Imagen de la aplicación](Screenshot_20260915_124939.png)
 
