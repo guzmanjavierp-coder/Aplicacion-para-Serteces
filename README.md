@@ -46,5 +46,5 @@ incluyendo:
 
 ## Imagen de la aplicación
 
-![Imagen de la aplicación](Screenshot_20260915_124939.png)
+![Imagen de la aplicación](Ventanas.png)
 
