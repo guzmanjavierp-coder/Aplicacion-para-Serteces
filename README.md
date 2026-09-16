@@ -1,7 +1,50 @@
-# Sistema de gestión de equipos y combustible para Serteces
-## En este repositorio estará documentado el proyecto del grupo 3 el cual consiste en crear una aplicación en Java para llevar control del inventario de la empresa.
+# Sistema de Gestión de Equipos y Combustible para Serteces
 
+> Aplicación desarrollada en Java para la gestión de equipos,
+> inventario y combustible de la compañía Serteces, proyecto para la clase de Programación Orientada a Objetos en la UNIS.
 
-Este es un sistema de gestión de equipos y combustible, diseñado para la compañía Serteces,Permite manejar equipo, mantenimientos, reparaciones, tipos de combustibles, y movimientos de combustibles. Tiene un robusto sistema de inventario, que permite crear categorías, identificar productos por medio de un ID único, y generar alertas de bajo inventario. Permite ingresar información sobre los productos dentro de inventario, como código, nombre, descripción, categoría, cantidad, ubicación física, estado y persona responsable.
+## Miembros del Grupo
+-Javier Guzman
+-Agustín Illescas
+-Esteban Mesa
+
+## Descripción
+
+Este proyecto, desarrollado por el Grupo 3, consiste en una aplicación
+para llevar el control y la gestión del inventario de la compañía
+Serteces.
+
+El sistema permite administrar equipos, mantenimientos, reparaciones,
+combustibles y movimientos de combustible, además de proporcionar
+herramientas para el control del inventario.
+
+## Funcionalidades
+
+- Gestión de equipos
+- Registro de mantenimientos
+- Registro de reparaciones
+- Gestión de tipos de combustible
+- Registro de movimientos de combustible
+- Creación y gestión de categorías
+- Identificación de productos mediante un ID único
+- Alertas de bajo inventario
+
+## Gestión de inventario
+
+El sistema permite registrar información detallada de los productos,
+incluyendo:
+
+- **Código**
+- **Nombre**
+- **Descripción**
+- **Categoría**
+- **Cantidad**
+- **Ubicación física**
+- **Estado**
+- **Persona responsable**
+
+## Imagen de la aplicación
+![Aplicación con todas sus ventanas abiertas] (Ventanas.png)
 
 ![Imagen de la aplicación](Screenshot_20260915_124939.png)
+
