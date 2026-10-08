@@ -46,7 +46,7 @@ public class GestionCombustible {
         if (!Validador.esTextoValido(m.getCodigoTipoCombustible())) return "El codigo de tipo de combustible es obligatorio.";
         TipoCombustible encontrado = null; for (TipoCombustible t : archivoTiposCombustible.leer()) if (t.getCodigo().equals(m.getCodigoTipoCombustible())) { encontrado=t; break; }
         if (encontrado == null) return "El tipo de combustible indicado no existe.";
-        if (!Validador.esCantidadMayorQueCero(m.getCantidad())) return "La cantidad debe ser mayor que cero.";
+        if (!Double.isFinite(m.getCantidad()) || !Validador.esCantidadMayorQueCero(m.getCantidad())) return "La cantidad debe ser finita y mayor que cero.";
         if (m.getFecha() == null) return "La fecha del movimiento es obligatoria.";
         if (!Validador.esTextoValido(m.getResponsable())) return "El responsable del movimiento es obligatorio.";
         return null;

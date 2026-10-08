@@ -121,27 +121,27 @@ public class VistaCombustible extends JFrame {
 
         btnRegistrarEntrada.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                registrarEntrada();
+                Componentes.ejecutar(VistaCombustible.this, () -> registrarEntrada());
             }
         });
         btnRegistrarSalida.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                registrarSalida();
+                Componentes.ejecutar(VistaCombustible.this, () -> registrarSalida());
             }
         });
         btnListar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                cargarTabla(gestionCombustible.listar());
+                Componentes.ejecutar(VistaCombustible.this, () -> cargarTabla(gestionCombustible.listar()));
             }
         });
         btnBuscarTipo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                buscarPorTipo();
+                Componentes.ejecutar(VistaCombustible.this, () -> buscarPorTipo());
             }
         });
         btnConsultarExistencia.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                consultarExistencia();
+                Componentes.ejecutar(VistaCombustible.this, () -> consultarExistencia());
             }
         });
         btnLimpiar.addActionListener(new ActionListener() {
@@ -225,7 +225,7 @@ public class VistaCombustible extends JFrame {
             mostrarError("La cantidad debe ser un numero valido.");
             return null;
         }
-        if (cantidad <= 0) {
+        if (!Double.isFinite(cantidad) || cantidad <= 0) {
             mostrarError("La cantidad debe ser mayor que cero.");
             return null;
         }

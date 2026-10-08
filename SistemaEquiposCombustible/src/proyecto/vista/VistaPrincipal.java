@@ -17,17 +17,17 @@ public class VistaPrincipal extends JFrame {
     private JButton btnTiposCombustible, btnMovimientosCombustible, btnAlertas;
     public VistaPrincipal() { configurarVentana(); construirInterfaz(); }
     private void configurarVentana() {
-        setTitle("Sistema de Gestion de Equipos y Combustible");
+        setTitle("Sistema de Gestión Serteces");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(new Dimension(500, 430));
+        setSize(new Dimension(560, 600));
         setLocationRelativeTo(null);
         setResizable(false);
     }
     private void construirInterfaz() {
-        JLabel titulo = new JLabel("Sistema de Gestion de Equipos y Combustible", SwingConstants.CENTER);
+        JLabel titulo = new JLabel("Sistema de Gestión Serteces", SwingConstants.CENTER);
         titulo.setFont(new Font("SansSerif", Font.BOLD, 16));
         titulo.setBorder(javax.swing.BorderFactory.createEmptyBorder(15, 10, 15, 10));
-        JPanel panelBotones = new JPanel(new GridLayout(7, 1, 10, 10));
+        JPanel panelBotones = new JPanel(new GridLayout(10, 1, 10, 10));
         panelBotones.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 60, 20, 60));
         btnEquipos = new JButton("Equipos");
         btnCategorias = new JButton("Categorias");
@@ -38,13 +38,16 @@ public class VistaPrincipal extends JFrame {
         btnAlertas = new JButton("Alertas de Bajo Inventario");
         panelBotones.add(btnEquipos); panelBotones.add(btnCategorias); panelBotones.add(btnMantenimientos);
         panelBotones.add(btnReparaciones); panelBotones.add(btnTiposCombustible); panelBotones.add(btnMovimientosCombustible); panelBotones.add(btnAlertas);
+        panelBotones.add(Componentes.boton("Proveedores y registros asociados", this, () -> new VistaProveedores().setVisible(true)));
+        panelBotones.add(Componentes.boton("Compras de combustible", this, () -> new VistaCompras().setVisible(true)));
+        panelBotones.add(Componentes.boton("Reportes y consulta de consumo", this, () -> new VistaReportes().setVisible(true)));
         getContentPane().add(titulo, BorderLayout.NORTH); getContentPane().add(panelBotones, BorderLayout.CENTER);
         btnEquipos.addActionListener(new ActionListener() { public void actionPerformed(ActionEvent e) { new VistaEquipos().setVisible(true); } });
         btnCategorias.addActionListener(new ActionListener() { public void actionPerformed(ActionEvent e) { new VistaCategorias().setVisible(true); } });
         btnMantenimientos.addActionListener(new ActionListener() { public void actionPerformed(ActionEvent e) { new VistaMantenimientos().setVisible(true); } });
         btnReparaciones.addActionListener(new ActionListener() { public void actionPerformed(ActionEvent e) { new VistaReparaciones().setVisible(true); } });
         btnTiposCombustible.addActionListener(new ActionListener() { public void actionPerformed(ActionEvent e) { new VistaTiposCombustible().setVisible(true); } });
-        btnMovimientosCombustible.addActionListener(new ActionListener() { public void actionPerformed(ActionEvent e) { new VistaCombustible().setVisible(true); } });
+        btnMovimientosCombustible.addActionListener(new ActionListener() { public void actionPerformed(ActionEvent e) { Componentes.ejecutar(VistaPrincipal.this, () -> new VistaCombustible().setVisible(true)); } });
         btnAlertas.addActionListener(new ActionListener() { public void actionPerformed(ActionEvent e) { new VistaAlertas().setVisible(true); } });
     }
 }

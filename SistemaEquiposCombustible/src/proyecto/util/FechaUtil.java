@@ -2,11 +2,13 @@ package proyecto.util;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 
 public class FechaUtil {
-    private static final DateTimeFormatter FORMATO = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter FORMATO = DateTimeFormatter.ofPattern("dd/MM/uuuu").withResolverStyle(ResolverStyle.STRICT);
     private FechaUtil() {}
     public static LocalDate parsear(String texto) {
+        if (texto == null) return null;
         try { return LocalDate.parse(texto, FORMATO); }
         catch (DateTimeParseException e) { return null; }
     }
