@@ -62,7 +62,7 @@ public class MovimientoCombustible implements Serializable {
     // La cantidad debe ser mayor que cero: un movimiento de cantidad
     // cero o negativa no representa una entrada ni una salida valida.
     public void setCantidad(double cantidad) {
-        if (cantidad <= 0) {
+        if (!Double.isFinite(cantidad) || cantidad <= 0) {
             throw new IllegalArgumentException("La cantidad del movimiento debe ser mayor que cero.");
         }
         this.cantidad = cantidad;

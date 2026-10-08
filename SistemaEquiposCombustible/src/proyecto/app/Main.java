@@ -1,6 +1,7 @@
 package proyecto.app;
 
 import javax.swing.SwingUtilities;
+import javax.swing.JOptionPane;
 import proyecto.vista.VistaPrincipal;
 
 public class Main {
@@ -8,9 +9,13 @@ public class Main {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                DatosPrueba.cargarDatosSiEsNecesario();
-                VistaPrincipal ventana = new VistaPrincipal();
-                ventana.setVisible(true);
+                try {
+                    DatosPrueba.cargarDatosSiEsNecesario();
+                    VistaPrincipal ventana = new VistaPrincipal();
+                    ventana.setVisible(true);
+                } catch (IllegalStateException ex) {
+                    JOptionPane.showMessageDialog(null, ex.getMessage(), "No se pudo iniciar", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
     }
