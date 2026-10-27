@@ -20,6 +20,8 @@ public class Proveedor implements Serializable {
     }
     public String getCodigo() { return codigo; }
     public String getNombre() { return nombre; }
+    /** Alias de presentacion; conserva el atributo serializado de versiones anteriores. */
+    public String getEmpresa() { return nombre; }
     public String getContacto() { return contacto; }
     public String getTelefono() { return telefono; }
     public String getCorreo() { return correo; }

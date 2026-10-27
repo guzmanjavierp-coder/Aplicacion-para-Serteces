@@ -69,7 +69,7 @@ public class Reparacion implements Serializable {
     // para que la clase nunca quede en un estado invalido, sin importar
     // desde donde se modifique.
     public void setCosto(double costo) {
-        if (costo < 0) {
+        if (!Double.isFinite(costo) || costo < 0) {
             throw new IllegalArgumentException("El costo de la reparacion no puede ser negativo.");
         }
         this.costo = costo;

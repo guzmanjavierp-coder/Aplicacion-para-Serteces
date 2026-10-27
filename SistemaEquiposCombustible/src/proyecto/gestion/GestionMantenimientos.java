@@ -31,6 +31,7 @@ public class GestionMantenimientos {
         if (error != null) {
             return error;
         }
+        if (!mantenimiento.tieneCostoRegistrado()) return "Debe indicar el costo del nuevo mantenimiento (puede ser cero).";
         List<Mantenimiento> mantenimientos = archivoMantenimientos.leer();
         if (buscarEnLista(mantenimientos, mantenimiento.getId()) != null) {
             return "Ya existe un mantenimiento con ese ID.";
@@ -50,10 +51,13 @@ public class GestionMantenimientos {
         if (existente == null) {
             return "No existe un mantenimiento con ese ID.";
         }
+        if (existente.tieneCostoRegistrado() && !mantenimiento.tieneCostoRegistrado())
+            return "No se puede quitar un costo ya registrado.";
         existente.setCodigoEquipo(mantenimiento.getCodigoEquipo());
         existente.setFecha(mantenimiento.getFecha());
         existente.setTipo(mantenimiento.getTipo());
         existente.setObservaciones(mantenimiento.getObservaciones());
+        existente.setCosto(mantenimiento.getCosto());
         archivoMantenimientos.guardar(mantenimientos);
         return null;
     }
@@ -107,6 +111,9 @@ public class GestionMantenimientos {
     }
 
     private String validarDatosBasicos(Mantenimiento mantenimiento) {
+        if (mantenimiento == null) return "El mantenimiento es obligatorio.";
+        if (mantenimiento.tieneCostoRegistrado() && (!Double.isFinite(mantenimiento.getCosto()) || mantenimiento.getCosto() < 0))
+            return "El costo debe ser finito y no negativo.";
         if (!Validador.esTextoValido(mantenimiento.getId())) {
             return "El ID del mantenimiento es obligatorio.";
         }

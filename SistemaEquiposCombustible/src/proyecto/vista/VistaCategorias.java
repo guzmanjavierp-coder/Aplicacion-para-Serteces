@@ -1,5 +1,7 @@
 package proyecto.vista;
 
+import proyecto.util.GeneradorId;
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -43,6 +45,7 @@ public class VistaCategorias extends JFrame {
         configurarVentana();
         construirInterfaz();
         cargarTabla();
+        Estilo.aplicar(this);
     }
 
     private void configurarVentana() {
@@ -53,15 +56,13 @@ public class VistaCategorias extends JFrame {
     }
 
     private void construirInterfaz() {
-        JPanel panelFormulario = new JPanel(new GridLayout(3, 2, 5, 5));
+        JPanel panelFormulario = new JPanel(new GridLayout(2, 2, 5, 5));
         panelFormulario.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         txtCodigo = new JTextField();
         txtNombre = new JTextField();
         txtDescripcion = new JTextField();
 
-        panelFormulario.add(new JLabel("Codigo:"));
-        panelFormulario.add(txtCodigo);
         panelFormulario.add(new JLabel("Nombre:"));
         panelFormulario.add(txtNombre);
         panelFormulario.add(new JLabel("Descripcion:"));
@@ -87,6 +88,14 @@ public class VistaCategorias extends JFrame {
             }
         };
         tablaCategorias = new JTable(modeloTabla);
+        tablaCategorias.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting() && tablaCategorias.getSelectedRow() >= 0) {
+                int fila = tablaCategorias.getSelectedRow();
+                txtCodigo.setText(""+modeloTabla.getValueAt(fila, 0));
+                txtNombre.setText(""+modeloTabla.getValueAt(fila, 1));
+                txtDescripcion.setText(""+modeloTabla.getValueAt(fila, 2));
+            }
+        });
         JScrollPane scrollTabla = new JScrollPane(tablaCategorias);
 
         JPanel panelSuperior = new JPanel(new BorderLayout());
@@ -104,6 +113,7 @@ public class VistaCategorias extends JFrame {
     }
 
     private void registrar() {
+        txtCodigo.setText(GeneradorId.generarId("CAT"));
         Categoria categoria = new Categoria(
                 txtCodigo.getText().trim(),
                 txtNombre.getText().trim(),
@@ -150,7 +160,9 @@ public class VistaCategorias extends JFrame {
     }
 
     private void buscar() {
-        String codigo = txtCodigo.getText().trim();
+        String codigo = JOptionPane.showInputDialog(this, "Codigo que desea consultar:");
+        if (codigo == null) return;
+        codigo = codigo.trim();
         if (codigo.isEmpty()) {
             mostrarError("Debe ingresar un codigo para buscar.");
             return;
@@ -178,6 +190,7 @@ public class VistaCategorias extends JFrame {
     }
 
     private void limpiarCampos() {
+        tablaCategorias.clearSelection();
         txtCodigo.setText("");
         txtNombre.setText("");
         txtDescripcion.setText("");

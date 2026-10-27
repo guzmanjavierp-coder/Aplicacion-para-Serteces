@@ -17,6 +17,8 @@ public class Mantenimiento implements Serializable {
     private LocalDate fecha;
     private TipoMantenimiento tipo;
     private String observaciones;
+    // null distingue un costo desconocido de un servicio gratuito. Archivos anteriores: null.
+    private Double costo;
 
     public Mantenimiento(String id, String codigoEquipo, LocalDate fecha,
                           TipoMantenimiento tipo, String observaciones) {
@@ -25,6 +27,20 @@ public class Mantenimiento implements Serializable {
         this.fecha = fecha;
         this.tipo = tipo;
         this.observaciones = observaciones;
+    }
+
+    public Mantenimiento(String id, String codigoEquipo, LocalDate fecha,
+                         TipoMantenimiento tipo, String observaciones, double costo) {
+        this(id, codigoEquipo, fecha, tipo, observaciones);
+        setCosto(costo);
+    }
+    public Double getCosto() { return costo; }
+    public boolean tieneCostoRegistrado() { return costo != null; }
+    public void setCosto(Double costo) {
+        if (costo != null && (!Double.isFinite(costo) || costo < 0))
+            throw new IllegalArgumentException("El costo debe ser finito y no negativo.");
+        this.costo = costo == null ? null : java.math.BigDecimal.valueOf(costo)
+                .setScale(2, java.math.RoundingMode.HALF_UP).doubleValue();
     }
 
     public String getId() {

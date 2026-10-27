@@ -18,7 +18,7 @@ public class GestionProveedores {
         if (p == null) return "El proveedor es obligatorio.";
         String[] obligatorios = {p.getCodigo(), p.getNombre(), p.getContacto(), p.getTelefono(), p.getDireccion(), p.getServicios()};
         for (String s : obligatorios) if (s == null || s.trim().isEmpty())
-            return "Complete codigo, nombre, contacto, telefono, direccion y servicios.";
+            return "Seleccione un proveedor para editar o complete empresa, contacto, telefono, direccion y servicios.";
         if (p.getCorreo() != null && !p.getCorreo().isEmpty() && !p.getCorreo().matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+"))
             return "El correo no tiene un formato valido.";
         return null;

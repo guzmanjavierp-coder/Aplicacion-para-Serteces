@@ -39,6 +39,7 @@ public class VistaMantenimientos extends JFrame {
     private JTextField txtFecha;
     private JComboBox<TipoMantenimiento> comboTipo;
     private JTextField txtObservaciones;
+    private JTextField txtCosto;
 
     private JTextField txtFechaInicio;
     private JTextField txtFechaFin;
@@ -62,6 +63,7 @@ public class VistaMantenimientos extends JFrame {
         construirInterfaz();
         cargarComboEquipos();
         cargarTabla(gestionMantenimientos.listar());
+        Estilo.aplicar(this);
     }
 
     private void configurarVentana() {
@@ -72,26 +74,26 @@ public class VistaMantenimientos extends JFrame {
     }
 
     private void construirInterfaz() {
-        JPanel panelFormulario = new JPanel(new GridLayout(5, 2, 5, 5));
+        JPanel panelFormulario = new JPanel(new GridLayout(4, 2, 5, 5));
         panelFormulario.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         txtId = new JTextField();
         txtId.setEditable(false);
         comboEquipo = new JComboBox<Equipo>();
-        txtFecha = new JTextField();
+        txtFecha = new JTextField(FechaUtil.formatear(FechaUtil.hoy()));
         comboTipo = new JComboBox<TipoMantenimiento>(TipoMantenimiento.values());
         txtObservaciones = new JTextField();
+        txtCosto = new JTextField();
 
-        panelFormulario.add(new JLabel("ID (autogenerado):"));
-        panelFormulario.add(txtId);
         panelFormulario.add(new JLabel("Equipo:"));
         panelFormulario.add(comboEquipo);
-        panelFormulario.add(new JLabel("Fecha (dd/MM/yyyy):"));
-        panelFormulario.add(txtFecha);
         panelFormulario.add(new JLabel("Tipo:"));
         panelFormulario.add(comboTipo);
         panelFormulario.add(new JLabel("Observaciones:"));
         panelFormulario.add(txtObservaciones);
+        panelFormulario.add(new JLabel("Costo total:"));
+        panelFormulario.add(txtCosto);
+        txtCosto.setToolTipText("Ingrese cero si fue gratuito. Solo los registros antiguos pueden conservar costo no registrado.");
 
         JPanel panelPeriodo = new JPanel(new FlowLayout());
         txtFechaInicio = new JTextField(10);
@@ -121,13 +123,17 @@ public class VistaMantenimientos extends JFrame {
         panelBotones.add(btnCargarSeleccionado);
 
         modeloTabla = new DefaultTableModel(new Object[]{
-                "ID", "Equipo", "Fecha", "Tipo", "Observaciones"
+                "ID", "Equipo", "Fecha", "Tipo", "Observaciones", "Costo"
         }, 0) {
             public boolean isCellEditable(int fila, int columna) {
                 return false;
             }
         };
         tablaMantenimientos = new JTable(modeloTabla);
+        tablaMantenimientos.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting() && tablaMantenimientos.getSelectedRow() >= 0)
+                Componentes.ejecutar(this, this::cargarSeleccionado);
+        });
         JScrollPane scrollTabla = new JScrollPane(tablaMantenimientos);
 
         JPanel panelSuperior = new JPanel(new BorderLayout());
@@ -140,32 +146,32 @@ public class VistaMantenimientos extends JFrame {
 
         btnRegistrar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                registrar();
+                Componentes.ejecutar(VistaMantenimientos.this, () -> registrar());
             }
         });
         btnModificar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                modificar();
+                Componentes.ejecutar(VistaMantenimientos.this, () -> modificar());
             }
         });
         btnEliminar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                eliminar();
+                Componentes.ejecutar(VistaMantenimientos.this, () -> eliminar());
             }
         });
         btnListar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                cargarTabla(gestionMantenimientos.listar());
+                Componentes.ejecutar(VistaMantenimientos.this, () -> cargarTabla(gestionMantenimientos.listar()));
             }
         });
         btnBuscarEquipo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                buscarPorEquipo();
+                Componentes.ejecutar(VistaMantenimientos.this, () -> buscarPorEquipo());
             }
         });
         btnBuscarPeriodo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                buscarPorPeriodo();
+                Componentes.ejecutar(VistaMantenimientos.this, () -> buscarPorPeriodo());
             }
         });
         btnLimpiar.addActionListener(new ActionListener() {
@@ -175,7 +181,7 @@ public class VistaMantenimientos extends JFrame {
         });
         btnCargarSeleccionado.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                cargarSeleccionado();
+                Componentes.ejecutar(VistaMantenimientos.this, () -> cargarSeleccionado());
             }
         });
     }
@@ -189,6 +195,7 @@ public class VistaMantenimientos extends JFrame {
     }
 
     private void registrar() {
+        txtFecha.setText(FechaUtil.formatear(FechaUtil.hoy()));
         Mantenimiento mantenimiento = construirDesdeFormulario(GeneradorId.generarId("MANT"));
         if (mantenimiento == null) {
             return;
@@ -272,7 +279,8 @@ public class VistaMantenimientos extends JFrame {
             mostrarError("Debe seleccionar un equipo.");
             return null;
         }
-        LocalDate fecha = FechaUtil.parsear(txtFecha.getText().trim());
+        LocalDate fecha = gestionMantenimientos.listar().stream().filter(m -> m.getId().equals(id))
+                .map(Mantenimiento::getFecha).findFirst().orElse(FechaUtil.hoy());
         if (fecha == null) {
             mostrarError("La fecha no es valida. Use el formato dd/MM/yyyy.");
             return null;
@@ -283,7 +291,18 @@ public class VistaMantenimientos extends JFrame {
             mostrarError("Debe ingresar las observaciones.");
             return null;
         }
-        return new Mantenimiento(id, equipoSeleccionado.getCodigo(), fecha, tipoSeleccionado, observaciones);
+        Mantenimiento resultado = new Mantenimiento(id, equipoSeleccionado.getCodigo(), fecha, tipoSeleccionado, observaciones);
+        if (txtCosto.getText().trim().isEmpty()) {
+            boolean antiguoSinCosto = gestionMantenimientos.listar().stream()
+                    .anyMatch(m -> m.getId().equals(id) && !m.tieneCostoRegistrado());
+            if (!antiguoSinCosto) {
+                mostrarError("Ingrese el costo del mantenimiento. Use cero si no tuvo costo."); return null;
+            }
+        } else {
+            try { resultado.setCosto(Double.valueOf(txtCosto.getText().trim())); }
+            catch (IllegalArgumentException ex) { mostrarError("El costo debe ser un numero finito y no negativo."); return null; }
+        }
+        return resultado;
     }
 
     private void cargarSeleccionado() {
@@ -308,6 +327,7 @@ public class VistaMantenimientos extends JFrame {
         txtId.setText(mantenimiento.getId());
         txtFecha.setText(FechaUtil.formatear(mantenimiento.getFecha()));
         txtObservaciones.setText(mantenimiento.getObservaciones());
+        txtCosto.setText(mantenimiento.tieneCostoRegistrado() ? String.format(java.util.Locale.ROOT, "%.2f", mantenimiento.getCosto()) : "");
         comboTipo.setSelectedItem(mantenimiento.getTipo());
         for (int i = 0; i < comboEquipo.getItemCount(); i++) {
             Equipo equipo = comboEquipo.getItemAt(i);
@@ -327,14 +347,17 @@ public class VistaMantenimientos extends JFrame {
                     mantenimiento.getCodigoEquipo(),
                     FechaUtil.formatear(mantenimiento.getFecha()),
                     mantenimiento.getTipo(),
-                    mantenimiento.getObservaciones()
+                    mantenimiento.getObservaciones(),
+                    mantenimiento.tieneCostoRegistrado() ? String.format(java.util.Locale.ROOT, "%.2f", mantenimiento.getCosto()) : "No registrado"
             });
         }
     }
 
     private void limpiarCampos() {
+        tablaMantenimientos.clearSelection();
+        txtCosto.setText("");
         txtId.setText("");
-        txtFecha.setText("");
+        txtFecha.setText(FechaUtil.formatear(FechaUtil.hoy()));
         txtObservaciones.setText("");
         txtFechaInicio.setText("");
         txtFechaFin.setText("");

@@ -3,6 +3,7 @@ package proyecto.app;
 import javax.swing.SwingUtilities;
 import javax.swing.JOptionPane;
 import proyecto.vista.VistaPrincipal;
+import proyecto.vista.Estilo;
 
 public class Main {
     public static void main(String[] args) {
@@ -10,6 +11,7 @@ public class Main {
             @Override
             public void run() {
                 try {
+                    Estilo.iniciar();
                     DatosPrueba.cargarDatosSiEsNecesario();
                     VistaPrincipal ventana = new VistaPrincipal();
                     ventana.setVisible(true);

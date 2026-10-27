@@ -37,7 +37,7 @@ public class VistaCombustible extends JFrame {
     private JComboBox<TipoCombustible> comboTipoCombustible;
     private JTextField txtCantidad;
     private JTextField txtFecha;
-    private JTextField txtResponsable;
+    private SelectorResponsable txtResponsable;
 
     private JButton btnRegistrarEntrada;
     private JButton btnRegistrarSalida;
@@ -56,6 +56,7 @@ public class VistaCombustible extends JFrame {
         construirInterfaz();
         cargarComboTipos();
         cargarTabla(gestionCombustible.listar());
+        Estilo.aplicar(this);
     }
 
     private void configurarVentana() {
@@ -66,24 +67,20 @@ public class VistaCombustible extends JFrame {
     }
 
     private void construirInterfaz() {
-        JPanel panelFormulario = new JPanel(new GridLayout(5, 2, 5, 5));
+        JPanel panelFormulario = new JPanel(new GridLayout(3, 2, 5, 5));
         panelFormulario.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         txtId = new JTextField();
         txtId.setEditable(false);
         comboTipoCombustible = new JComboBox<TipoCombustible>();
         txtCantidad = new JTextField();
-        txtFecha = new JTextField();
-        txtResponsable = new JTextField();
+        txtFecha = new JTextField(FechaUtil.formatear(FechaUtil.hoy()));
+        txtResponsable = new SelectorResponsable();
 
-        panelFormulario.add(new JLabel("ID (autogenerado):"));
-        panelFormulario.add(txtId);
         panelFormulario.add(new JLabel("Tipo de Combustible:"));
         panelFormulario.add(comboTipoCombustible);
-        panelFormulario.add(new JLabel("Cantidad:"));
+        panelFormulario.add(new JLabel("Cantidad (galones):"));
         panelFormulario.add(txtCantidad);
-        panelFormulario.add(new JLabel("Fecha (dd/MM/yyyy):"));
-        panelFormulario.add(txtFecha);
         panelFormulario.add(new JLabel("Responsable:"));
         panelFormulario.add(txtResponsable);
 
@@ -229,7 +226,7 @@ public class VistaCombustible extends JFrame {
             mostrarError("La cantidad debe ser mayor que cero.");
             return null;
         }
-        LocalDate fecha = FechaUtil.parsear(txtFecha.getText().trim());
+        LocalDate fecha = FechaUtil.hoy();
         if (fecha == null) {
             mostrarError("La fecha no es valida. Use el formato dd/MM/yyyy.");
             return null;
@@ -261,7 +258,7 @@ public class VistaCombustible extends JFrame {
     private void limpiarCampos() {
         txtId.setText("");
         txtCantidad.setText("");
-        txtFecha.setText("");
+        txtFecha.setText(FechaUtil.formatear(FechaUtil.hoy()));
         txtResponsable.setText("");
         if (comboTipoCombustible.getItemCount() > 0) {
             comboTipoCombustible.setSelectedIndex(0);

@@ -5,7 +5,7 @@ import proyecto.gestion.*;
 import proyecto.modelo.*;
 import proyecto.util.FechaUtil;
 
-/** RF11: reportes generales; RF16 queda pendiente. */
+/** RF11: reportes generales de inventario. */
 public class ReporteInventario extends Reporte {
     public enum Seccion { EQUIPOS, COMBUSTIBLE, MANTENIMIENTOS, REPARACIONES }
     private final Seccion seccion;
@@ -21,7 +21,7 @@ public class ReporteInventario extends Reporte {
                 for (TipoCombustible t : new GestionTiposCombustible().listar()) filas.add(new String[]{t.getCodigo(), t.getNombre(), ""+gestion.calcularExistencia(t.getCodigo()), ""+t.getNivelMinimo()});
                 break;
             case MANTENIMIENTOS:
-                for (Mantenimiento m : new GestionMantenimientos().listar()) filas.add(new String[]{m.getId(), m.getCodigoEquipo(), FechaUtil.formatear(m.getFecha()), ""+m.getTipo(), m.getObservaciones()});
+                for (Mantenimiento m : new GestionMantenimientos().listar()) filas.add(new String[]{m.getId(), m.getCodigoEquipo(), FechaUtil.formatear(m.getFecha()), ""+m.getTipo(), m.getObservaciones(), m.tieneCostoRegistrado() ? String.format(java.util.Locale.ROOT, "%.2f", m.getCosto()) : "No registrado"});
                 break;
             case REPARACIONES:
                 for (Reparacion r : new GestionReparaciones().listar()) filas.add(new String[]{r.getId(), r.getCodigoEquipo(), FechaUtil.formatear(r.getFecha()), r.getDescripcion(), ""+r.getCosto(), r.getObservaciones()});
@@ -33,7 +33,7 @@ public class ReporteInventario extends Reporte {
         switch (seccion) {
             case EQUIPOS: return new String[]{"Codigo", "Nombre", "Descripcion", "Categoria", "Cantidad", "Ubicacion", "Estado", "Responsable"};
             case COMBUSTIBLE: return new String[]{"Codigo", "Combustible", "Existencia", "Nivel minimo"};
-            case MANTENIMIENTOS: return new String[]{"ID", "Equipo", "Fecha", "Tipo", "Observaciones"};
+            case MANTENIMIENTOS: return new String[]{"ID", "Equipo", "Fecha", "Tipo", "Observaciones", "Costo"};
             default: return new String[]{"ID", "Equipo", "Fecha", "Descripcion", "Costo", "Observaciones"};
         }
     }

@@ -58,6 +58,7 @@ public class VistaReparaciones extends JFrame {
         construirInterfaz();
         cargarComboEquipos();
         cargarTabla(gestionReparaciones.listar());
+        Estilo.aplicar(this);
     }
 
     private void configurarVentana() {
@@ -68,23 +69,19 @@ public class VistaReparaciones extends JFrame {
     }
 
     private void construirInterfaz() {
-        JPanel panelFormulario = new JPanel(new GridLayout(6, 2, 5, 5));
+        JPanel panelFormulario = new JPanel(new GridLayout(4, 2, 5, 5));
         panelFormulario.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         txtId = new JTextField();
         txtId.setEditable(false);
         comboEquipo = new JComboBox<Equipo>();
-        txtFecha = new JTextField();
+        txtFecha = new JTextField(FechaUtil.formatear(FechaUtil.hoy()));
         txtDescripcion = new JTextField();
         txtCosto = new JTextField();
         txtObservaciones = new JTextField();
 
-        panelFormulario.add(new JLabel("ID (autogenerado):"));
-        panelFormulario.add(txtId);
         panelFormulario.add(new JLabel("Equipo:"));
         panelFormulario.add(comboEquipo);
-        panelFormulario.add(new JLabel("Fecha (dd/MM/yyyy):"));
-        panelFormulario.add(txtFecha);
         panelFormulario.add(new JLabel("Descripcion:"));
         panelFormulario.add(txtDescripcion);
         panelFormulario.add(new JLabel("Costo:"));
@@ -128,27 +125,27 @@ public class VistaReparaciones extends JFrame {
 
         btnRegistrar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                registrar();
+                Componentes.ejecutar(VistaReparaciones.this, () -> registrar());
             }
         });
         btnModificar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                modificar();
+                Componentes.ejecutar(VistaReparaciones.this, () -> modificar());
             }
         });
         btnEliminar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                eliminar();
+                Componentes.ejecutar(VistaReparaciones.this, () -> eliminar());
             }
         });
         btnListar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                cargarTabla(gestionReparaciones.listar());
+                Componentes.ejecutar(VistaReparaciones.this, () -> cargarTabla(gestionReparaciones.listar()));
             }
         });
         btnBuscarEquipo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                buscarPorEquipo();
+                Componentes.ejecutar(VistaReparaciones.this, () -> buscarPorEquipo());
             }
         });
         btnLimpiar.addActionListener(new ActionListener() {
@@ -158,7 +155,7 @@ public class VistaReparaciones extends JFrame {
         });
         btnCargarSeleccionado.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                cargarSeleccionado();
+                Componentes.ejecutar(VistaReparaciones.this, () -> cargarSeleccionado());
             }
         });
     }
@@ -172,6 +169,7 @@ public class VistaReparaciones extends JFrame {
     }
 
     private void registrar() {
+        txtFecha.setText(FechaUtil.formatear(FechaUtil.hoy()));
         Reparacion reparacion = construirDesdeFormulario(GeneradorId.generarId("REP"));
         if (reparacion == null) {
             return;
@@ -241,7 +239,8 @@ public class VistaReparaciones extends JFrame {
             mostrarError("Debe seleccionar un equipo.");
             return null;
         }
-        LocalDate fecha = FechaUtil.parsear(txtFecha.getText().trim());
+        LocalDate fecha = gestionReparaciones.listar().stream().filter(r -> r.getId().equals(id))
+                .map(Reparacion::getFecha).findFirst().orElse(FechaUtil.hoy());
         if (fecha == null) {
             mostrarError("La fecha no es valida. Use el formato dd/MM/yyyy.");
             return null;
@@ -258,7 +257,7 @@ public class VistaReparaciones extends JFrame {
             mostrarError("El costo debe ser un numero valido.");
             return null;
         }
-        if (costo < 0) {
+        if (!Double.isFinite(costo) || costo < 0) {
             mostrarError("El costo no puede ser negativo.");
             return null;
         }
@@ -320,7 +319,7 @@ public class VistaReparaciones extends JFrame {
 
     private void limpiarCampos() {
         txtId.setText("");
-        txtFecha.setText("");
+        txtFecha.setText(FechaUtil.formatear(FechaUtil.hoy()));
         txtDescripcion.setText("");
         txtCosto.setText("");
         txtObservaciones.setText("");

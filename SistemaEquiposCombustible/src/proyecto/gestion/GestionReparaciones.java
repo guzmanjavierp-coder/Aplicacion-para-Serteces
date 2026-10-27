@@ -96,7 +96,7 @@ public class GestionReparaciones {
         if (!Validador.esTextoValido(reparacion.getDescripcion())) {
             return "La descripcion de la reparacion es obligatoria.";
         }
-        if (!Validador.esDecimalValidoNoNegativo(reparacion.getCosto())) {
+        if (!Double.isFinite(reparacion.getCosto()) || !Validador.esDecimalValidoNoNegativo(reparacion.getCosto())) {
             return "El costo de la reparacion no puede ser negativo.";
         }
         if (!Validador.esTextoValido(reparacion.getObservaciones())) {

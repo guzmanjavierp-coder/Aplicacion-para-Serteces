@@ -1,5 +1,7 @@
 package proyecto.vista;
 
+import proyecto.util.GeneradorId;
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -37,7 +39,7 @@ public class VistaEquipos extends JFrame {
     private JTextField txtCantidad;
     private JTextField txtUbicacion;
     private JComboBox<EstadoEquipo> comboEstado;
-    private JTextField txtResponsable;
+    private SelectorResponsable txtResponsable;
 
     private JButton btnRegistrar;
     private JButton btnModificar;
@@ -56,6 +58,7 @@ public class VistaEquipos extends JFrame {
         construirInterfaz();
         cargarComboCategorias();
         cargarTabla(gestionEquipos.listar());
+        Estilo.aplicar(this);
     }
 
     private void configurarVentana() {
@@ -66,7 +69,7 @@ public class VistaEquipos extends JFrame {
     }
 
     private void construirInterfaz() {
-        JPanel panelFormulario = new JPanel(new GridLayout(8, 2, 5, 5));
+        JPanel panelFormulario = new JPanel(new GridLayout(7, 2, 5, 5));
         panelFormulario.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         txtCodigo = new JTextField();
@@ -76,10 +79,8 @@ public class VistaEquipos extends JFrame {
         txtCantidad = new JTextField();
         txtUbicacion = new JTextField();
         comboEstado = new JComboBox<>(EstadoEquipo.values());
-        txtResponsable = new JTextField();
+        txtResponsable = new SelectorResponsable();
 
-        panelFormulario.add(new JLabel("Codigo:"));
-        panelFormulario.add(txtCodigo);
         panelFormulario.add(new JLabel("Nombre:"));
         panelFormulario.add(txtNombre);
         panelFormulario.add(new JLabel("Descripcion:"));
@@ -119,6 +120,12 @@ public class VistaEquipos extends JFrame {
             }
         };
         tablaEquipos = new JTable(modeloTabla);
+        tablaEquipos.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting() && tablaEquipos.getSelectedRow() >= 0) {
+                Equipo equipo = gestionEquipos.buscarPorCodigo(""+modeloTabla.getValueAt(tablaEquipos.getSelectedRow(), 0));
+                if (equipo != null) cargarFormularioConEquipo(equipo);
+            }
+        });
         JScrollPane scrollTabla = new JScrollPane(tablaEquipos);
 
         JPanel panelSuperior = new JPanel(new BorderLayout());
@@ -145,6 +152,7 @@ public class VistaEquipos extends JFrame {
     }
 
     private void registrar() {
+        txtCodigo.setText(GeneradorId.generarId("EQ"));
         Equipo equipo = construirEquipoDesdeFormulario();
         if (equipo == null) {
             return;
@@ -191,7 +199,9 @@ public class VistaEquipos extends JFrame {
     }
 
     private void buscarPorCodigo() {
-        String codigo = txtCodigo.getText().trim();
+        String codigo = JOptionPane.showInputDialog(this, "Codigo que desea consultar:");
+        if (codigo == null) return;
+        codigo = codigo.trim();
         if (codigo.isEmpty()) {
             mostrarError("Debe ingresar un codigo para buscar.");
             return;
@@ -283,6 +293,7 @@ public class VistaEquipos extends JFrame {
     }
 
     private void limpiarCampos() {
+        tablaEquipos.clearSelection();
         txtCodigo.setText("");
         txtNombre.setText("");
         txtDescripcion.setText("");

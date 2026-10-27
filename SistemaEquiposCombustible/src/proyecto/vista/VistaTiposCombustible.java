@@ -1,5 +1,7 @@
 package proyecto.vista;
 
+import proyecto.util.GeneradorId;
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -46,6 +48,7 @@ public class VistaTiposCombustible extends JFrame {
         configurarVentana();
         construirInterfaz();
         cargarTabla(gestionTiposCombustible.listar());
+        Estilo.aplicar(this);
     }
 
     private void configurarVentana() {
@@ -56,15 +59,13 @@ public class VistaTiposCombustible extends JFrame {
     }
 
     private void construirInterfaz() {
-        JPanel panelFormulario = new JPanel(new GridLayout(3, 2, 5, 5));
+        JPanel panelFormulario = new JPanel(new GridLayout(2, 2, 5, 5));
         panelFormulario.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         txtCodigo = new JTextField();
         txtNombre = new JTextField();
         txtNivelMinimo = new JTextField();
 
-        panelFormulario.add(new JLabel("Codigo:"));
-        panelFormulario.add(txtCodigo);
         panelFormulario.add(new JLabel("Nombre:"));
         panelFormulario.add(txtNombre);
         panelFormulario.add(new JLabel("Nivel Minimo:"));
@@ -93,6 +94,9 @@ public class VistaTiposCombustible extends JFrame {
             }
         };
         tablaTipos = new JTable(modeloTabla);
+        tablaTipos.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting() && tablaTipos.getSelectedRow() >= 0) cargarSeleccionado();
+        });
         JScrollPane scrollTabla = new JScrollPane(tablaTipos);
 
         JPanel panelSuperior = new JPanel(new BorderLayout());
@@ -140,6 +144,7 @@ public class VistaTiposCombustible extends JFrame {
     }
 
     private void registrar() {
+        txtCodigo.setText(GeneradorId.generarId("COMB"));
         TipoCombustible tipo = construirDesdeFormulario();
         if (tipo == null) {
             return;
@@ -186,7 +191,9 @@ public class VistaTiposCombustible extends JFrame {
     }
 
     private void buscar() {
-        String codigo = txtCodigo.getText().trim();
+        String codigo = JOptionPane.showInputDialog(this, "Codigo que desea consultar:");
+        if (codigo == null) return;
+        codigo = codigo.trim();
         if (codigo.isEmpty()) {
             mostrarError("Debe ingresar un codigo para buscar.");
             return;
@@ -222,7 +229,7 @@ public class VistaTiposCombustible extends JFrame {
         String codigo = txtCodigo.getText().trim();
         String nombre = txtNombre.getText().trim();
         if (codigo.isEmpty() || nombre.isEmpty()) {
-            mostrarError("Debe completar el codigo y el nombre.");
+            mostrarError("Seleccione un registro para editar y complete el nombre.");
             return null;
         }
         double nivelMinimo;
@@ -252,6 +259,7 @@ public class VistaTiposCombustible extends JFrame {
     }
 
     private void limpiarCampos() {
+        tablaTipos.clearSelection();
         txtCodigo.setText("");
         txtNombre.setText("");
         txtNivelMinimo.setText("");

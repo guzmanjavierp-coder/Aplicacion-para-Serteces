@@ -7,6 +7,7 @@ import java.time.format.ResolverStyle;
 public class FechaUtil {
     private static final DateTimeFormatter FORMATO = DateTimeFormatter.ofPattern("dd/MM/uuuu").withResolverStyle(ResolverStyle.STRICT);
     private FechaUtil() {}
+    public static LocalDate hoy() { return LocalDate.now(java.time.ZoneId.of("America/Mexico_City")); }
     public static LocalDate parsear(String texto) {
         if (texto == null) return null;
         try { return LocalDate.parse(texto, FORMATO); }
