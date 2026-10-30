@@ -37,7 +37,7 @@ public class VistaEquipos extends JFrame {
     private JTextField txtDescripcion;
     private JComboBox<Categoria> comboCategoria;
     private JTextField txtCantidad;
-    private JTextField txtUbicacion;
+    private JComboBox<String> comboUbicacion;
     private JComboBox<EstadoEquipo> comboEstado;
     private SelectorResponsable txtResponsable;
 
@@ -59,6 +59,18 @@ public class VistaEquipos extends JFrame {
         cargarComboCategorias();
         cargarTabla(gestionEquipos.listar());
         Estilo.aplicar(this);
+        addWindowFocusListener(new java.awt.event.WindowAdapter() {
+            @Override public void windowGainedFocus(java.awt.event.WindowEvent e) {
+                String seleccion = (String) comboUbicacion.getSelectedItem();
+                cargarUbicaciones(seleccion);
+                Equipo equipo = gestionEquipos.buscarPorCodigo(txtCodigo.getText());
+                if (equipo != null) {
+                    comboUbicacion.setSelectedItem(equipo.getUbicacion());
+                    comboEstado.setSelectedItem(equipo.getEstado());
+                }
+                cargarTabla(gestionEquipos.listar());
+            }
+        });
     }
 
     private void configurarVentana() {
@@ -77,7 +89,8 @@ public class VistaEquipos extends JFrame {
         txtDescripcion = new JTextField();
         comboCategoria = new JComboBox<>();
         txtCantidad = new JTextField();
-        txtUbicacion = new JTextField();
+        comboUbicacion = new JComboBox<>();
+        cargarUbicaciones(null);
         comboEstado = new JComboBox<>(EstadoEquipo.values());
         txtResponsable = new SelectorResponsable();
 
@@ -90,7 +103,12 @@ public class VistaEquipos extends JFrame {
         panelFormulario.add(new JLabel("Cantidad:"));
         panelFormulario.add(txtCantidad);
         panelFormulario.add(new JLabel("Ubicacion:"));
-        panelFormulario.add(txtUbicacion);
+        JPanel ubicaciones = new JPanel(new BorderLayout(5, 0));
+        ubicaciones.add(comboUbicacion);
+        JButton administrar = new JButton("Administrar ubicaciones");
+        administrar.addActionListener(e -> new VistaUbicaciones().setVisible(true));
+        ubicaciones.add(administrar, BorderLayout.EAST);
+        panelFormulario.add(ubicaciones);
         panelFormulario.add(new JLabel("Estado:"));
         panelFormulario.add(comboEstado);
         panelFormulario.add(new JLabel("Responsable:"));
@@ -141,6 +159,16 @@ public class VistaEquipos extends JFrame {
         btnBuscarCodigo.addActionListener(e -> buscarPorCodigo());
         btnBuscarCategoria.addActionListener(e -> buscarPorCategoria());
         btnLimpiar.addActionListener(e -> limpiarCampos());
+    }
+
+    private void cargarUbicaciones(String seleccion) {
+        comboUbicacion.removeAllItems();
+        comboUbicacion.addItem("Selecciona una ubicacion");
+        for (String ubicacion : new proyecto.gestion.GestionUbicaciones().listar()) {
+            comboUbicacion.addItem(ubicacion);
+            if (seleccion != null && ubicacion.equalsIgnoreCase(seleccion.trim()))
+                comboUbicacion.setSelectedItem(ubicacion);
+        }
     }
 
     private void cargarComboCategorias() {
@@ -231,7 +259,7 @@ public class VistaEquipos extends JFrame {
         String codigo = txtCodigo.getText().trim();
         String nombre = txtNombre.getText().trim();
         String descripcion = txtDescripcion.getText().trim();
-        String ubicacion = txtUbicacion.getText().trim();
+        String ubicacion = comboUbicacion.getSelectedIndex() <= 0 ? "" : (String) comboUbicacion.getSelectedItem();
         String responsable = txtResponsable.getText().trim();
 
         if (codigo.isEmpty() || nombre.isEmpty() || ubicacion.isEmpty() || responsable.isEmpty()) {
@@ -264,7 +292,7 @@ public class VistaEquipos extends JFrame {
         txtNombre.setText(equipo.getNombre());
         txtDescripcion.setText(equipo.getDescripcion());
         txtCantidad.setText(String.valueOf(equipo.getCantidad()));
-        txtUbicacion.setText(equipo.getUbicacion());
+        cargarUbicaciones(equipo.getUbicacion());
         txtResponsable.setText(equipo.getResponsable());
         comboEstado.setSelectedItem(equipo.getEstado());
 
@@ -298,7 +326,7 @@ public class VistaEquipos extends JFrame {
         txtNombre.setText("");
         txtDescripcion.setText("");
         txtCantidad.setText("");
-        txtUbicacion.setText("");
+        comboUbicacion.setSelectedIndex(0);
         txtResponsable.setText("");
         if (comboCategoria.getItemCount() > 0) {
             comboCategoria.setSelectedIndex(0);

@@ -99,16 +99,7 @@ public class Equipo implements Serializable {
 
     @Override
     public String toString() {
-        return "Equipo{" +
-                "codigo='" + codigo + '\'' +
-                ", nombre='" + nombre + '\'' +
-                ", descripcion='" + descripcion + '\'' +
-                ", codigoCategoria='" + codigoCategoria + '\'' +
-                ", cantidad=" + cantidad +
-                ", ubicacion='" + ubicacion + '\'' +
-                ", estado=" + estado +
-                ", responsable='" + responsable + '\'' +
-                '}';
+        return nombre;
     }
 
     @Override

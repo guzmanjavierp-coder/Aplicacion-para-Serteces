@@ -3,6 +3,7 @@ package proyecto.gestion;
 import java.util.ArrayList;
 import java.util.List;
 import proyecto.modelo.Equipo;
+import proyecto.modelo.EstadoEquipo;
 import proyecto.modelo.Reparacion;
 import proyecto.persistencia.ArchivoEquipos;
 import proyecto.persistencia.ArchivoReparaciones;
@@ -31,8 +32,24 @@ public class GestionReparaciones {
         if (buscarEnLista(reparaciones, reparacion.getId()) != null) {
             return "Ya existe una reparacion con ese ID.";
         }
+        List<Equipo> equipos = archivoEquipos.leer();
+        for (Equipo equipo : equipos) {
+            if (equipo.getCodigo().equals(reparacion.getCodigoEquipo())) {
+                equipo.setEstado(EstadoEquipo.REPARACION);
+                break;
+            }
+        }
         reparaciones.add(reparacion);
         archivoReparaciones.guardar(reparaciones);
+        try {
+            archivoEquipos.guardar(equipos);
+        } catch (IllegalStateException ex) {
+            // Si falla el cambio de estado, deshacer la reparacion nueva.
+            reparaciones.remove(reparacion);
+            try { archivoReparaciones.guardar(reparaciones); }
+            catch (IllegalStateException falloReversion) { ex.addSuppressed(falloReversion); }
+            throw ex;
+        }
         return null;
     }
 
@@ -81,6 +98,7 @@ public class GestionReparaciones {
     }
 
     private String validarDatosBasicos(Reparacion reparacion) {
+        if (reparacion == null) return "La reparacion es obligatoria.";
         if (!Validador.esTextoValido(reparacion.getId())) {
             return "El ID de la reparacion es obligatorio.";
         }

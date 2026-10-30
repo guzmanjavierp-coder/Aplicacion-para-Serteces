@@ -54,6 +54,9 @@ public class VistaCompras extends JFrame {
             public void changedUpdate(DocumentEvent e) { calcularTotal(); }
         };
         cantidad.getDocument().addDocumentListener(recalcular); costo.getDocument().addDocumentListener(recalcular);
+        costo.setEditable(false);
+        costo.setToolTipText("Precio automatico del catalogo. Las compras anteriores conservan su precio original.");
+        tipo.addActionListener(e -> { if (idSeleccionado == null) cargarPrecioAutomatico(); });
         actualizar();
         tipo.setRenderer(new DefaultListCellRenderer() {
             @Override public Component getListCellRendererComponent(JList<?> lista, Object valor, int indice, boolean seleccionado, boolean foco) {
@@ -65,6 +68,18 @@ public class VistaCompras extends JFrame {
             }
         });
         Estilo.aplicar(this);
+        proveedor.setRenderer(new DefaultListCellRenderer() {
+            @Override public Component getListCellRendererComponent(JList<?> lista, Object valor, int indice, boolean seleccionado, boolean foco) {
+                if (valor instanceof Proveedor) {
+                    Proveedor empresa = (Proveedor) valor;
+                    String servicios = empresa.getServicios();
+                    valor = empresa.getCodigo() + " - " + empresa.getEmpresa()
+                            + " (" + (servicios == null || servicios.trim().isEmpty()
+                                    ? "Sin producto o servicio registrado" : servicios.trim()) + ")";
+                }
+                return super.getListCellRendererComponent(lista, valor, indice, seleccionado, foco);
+            }
+        });
         total.setFont(new Font("Segoe UI",Font.BOLD,22)); total.setForeground(Estilo.VERDE);
     }
     private void actualizar() {
@@ -80,6 +95,13 @@ public class VistaCompras extends JFrame {
             tabla.addRow(new Object[]{c.getId(), p == null ? c.getCodigoProveedor() : p.getEmpresa(), t == null ? c.getCodigoTipoCombustible() : t.getNombre(), c.getCantidad(), c.getCostoPorGalon(), c.getCostoTotal(), FechaUtil.formatear(c.getFecha()), c.getResponsable()});
         }
     }
+    private void cargarPrecioAutomatico() {
+        TipoCombustible combustible = (TipoCombustible) tipo.getSelectedItem();
+        Double precio = combustible == null ? null : combustible.getCostoPorGalon();
+        costo.setText(precio == null ? "" : String.format(java.util.Locale.ROOT, "%.2f", precio));
+        if (precio == null) estado.setText("El combustible seleccionado no tiene precio configurado.");
+    }
+
     private void calcularTotal() {
         try {
             double galones = Double.parseDouble(cantidad.getText().trim()), precio = Double.parseDouble(costo.getText().trim());
@@ -90,6 +112,7 @@ public class VistaCompras extends JFrame {
     private CompraCombustible construir(String id, LocalDate fecha) {
         Proveedor p = (Proveedor) proveedor.getSelectedItem(); TipoCombustible t = (TipoCombustible) tipo.getSelectedItem();
         if (p == null || t == null) throw new IllegalArgumentException("Registre y seleccione una empresa y un tipo de combustible.");
+        if (costo.getText().trim().isEmpty()) throw new IllegalArgumentException("El combustible seleccionado no tiene precio configurado.");
         double galones, precio;
         try { galones = Double.parseDouble(cantidad.getText().trim()); precio = Double.parseDouble(costo.getText().trim()); }
         catch (NumberFormatException ex) { throw new IllegalArgumentException("Cantidad y costo por galon deben ser numeros validos."); }
@@ -118,5 +141,6 @@ public class VistaCompras extends JFrame {
     private void limpiar() {
         idSeleccionado = null; tablaCompras.clearSelection(); cantidad.setText(""); costo.setText(""); responsable.setText("");
         total.setText("0.00"); estado.setText("Nueva compra. La fecha se registra automaticamente.");
+        cargarPrecioAutomatico();
     }
 }

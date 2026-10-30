@@ -87,3 +87,23 @@ powershell -ExecutionPolicy Bypass -File .\tests\EjecutarPruebas.ps1
 Las pruebas compilan todo el codigo y trabajan en una carpeta nueva dentro de `build`.
 No modifican los archivos `.dat` reales. Comprueban proveedores, asociaciones, compras,
 stock, consumo, limites de fechas, persistencia, CSV y construccion de ventanas Swing.
+
+
+**Ubicaciones** permite agregar, editar y eliminar lugares desde el panel principal
+(grupo Equipos) o desde **Administrar ubicaciones** en el formulario de equipos.
+El desplegable conserva los lugares de equipos existentes y se actualiza al volver
+al formulario. Renombrar un lugar actualiza sus equipos; para eliminarlo primero
+hay que reasignar los equipos que lo usan. El catalogo se guarda en `ubicaciones.dat`.
+
+
+Los selectores y consultas de equipos muestran el nombre del equipo. Los nuevos codigos automaticos son
+consecutivos por prefijo de al menos cuatro digitos (EQ0001, EQ0002; REP0001; MANT0001, etc.). Las reservas se
+conservan en `consecutivos.dat`; puede haber saltos si se cancela un registro.
+Los codigos anteriores conservan su valor y sus relaciones.
+
+Al registrar un mantenimiento nuevo, el equipo asociado cambia automaticamente
+al estado **En mantenimiento**. Al terminar el servicio, su estado puede
+actualizarse desde Equipos.
+
+Al registrar una reparacion nueva, el equipo asociado cambia automaticamente
+al estado **Reparacion**. Los registros rechazados no cambian el estado.

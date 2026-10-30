@@ -308,7 +308,7 @@ public class VistaReparaciones extends JFrame {
             Reparacion reparacion = lista.get(i);
             modeloTabla.addRow(new Object[]{
                     reparacion.getId(),
-                    reparacion.getCodigoEquipo(),
+                    proyecto.util.NombreEquipo.mostrar(reparacion.getCodigoEquipo()),
                     FechaUtil.formatear(reparacion.getFecha()),
                     reparacion.getDescripcion(),
                     reparacion.getCosto(),

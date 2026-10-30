@@ -103,6 +103,8 @@ public class TerceraEntregaTest {
             verificar(proveedores.asociar("P1", tipo, id) != null, "Asociacion duplicada.");
         }
         verificar(new GestionProveedores().consultarAsociaciones("P1").size() == 3, "Persistencia de asociaciones.");
+        for (AsociacionProveedor asociacion : new GestionProveedores().consultarAsociaciones("P1"))
+            verificar(proyecto.util.FechaUtil.hoy().equals(asociacion.getFechaAsociacion()), "Fecha automatica de asociacion persistida.");
         verificar(proveedores.asociar("P1", TipoRegistroProveedor.EQUIPO, "NO") != null, "Referencia inexistente.");
         correcto(proveedores.desasociar("P1", TipoRegistroProveedor.EQUIPO, "EQ"));
         verificar(proveedores.consultarAsociaciones("P1").size() == 2, "Quitar vinculo.");

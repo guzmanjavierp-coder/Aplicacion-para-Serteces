@@ -18,6 +18,10 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 import proyecto.gestion.GestionTiposCombustible;
+import proyecto.gestion.GestionCombustible;
+import proyecto.modelo.MovimientoCombustible;
+import proyecto.modelo.TipoMovimientoCombustible;
+import proyecto.util.FechaUtil;
 import proyecto.modelo.TipoCombustible;
 
 /**
@@ -31,6 +35,7 @@ public class VistaTiposCombustible extends JFrame {
     private JTextField txtCodigo;
     private JTextField txtNombre;
     private JTextField txtNivelMinimo;
+    private JTextField txtPrecio;
 
     private JButton btnRegistrar;
     private JButton btnModificar;
@@ -49,27 +54,37 @@ public class VistaTiposCombustible extends JFrame {
         construirInterfaz();
         cargarTabla(gestionTiposCombustible.listar());
         Estilo.aplicar(this);
+        javax.swing.Timer actualizacionStock = new javax.swing.Timer(1000, e -> {
+            if (isShowing()) Componentes.ejecutar(this, this::actualizarStock);
+        });
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override public void windowClosed(java.awt.event.WindowEvent e) { actualizacionStock.stop(); }
+        });
+        actualizacionStock.start();
     }
 
     private void configurarVentana() {
         setTitle("Gestion de Tipos de Combustible");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(600, 450);
+        setSize(1000, 550);
         setLocationRelativeTo(null);
     }
 
     private void construirInterfaz() {
-        JPanel panelFormulario = new JPanel(new GridLayout(2, 2, 5, 5));
+        JPanel panelFormulario = new JPanel(new GridLayout(3, 2, 5, 5));
         panelFormulario.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         txtCodigo = new JTextField();
         txtNombre = new JTextField();
         txtNivelMinimo = new JTextField();
+        txtPrecio = new JTextField();
 
         panelFormulario.add(new JLabel("Nombre:"));
         panelFormulario.add(txtNombre);
         panelFormulario.add(new JLabel("Nivel Minimo:"));
         panelFormulario.add(txtNivelMinimo);
+        panelFormulario.add(new JLabel("Precio por galon:"));
+        panelFormulario.add(txtPrecio);
 
         JPanel panelBotones = new JPanel(new FlowLayout());
         btnRegistrar = new JButton("Registrar");
@@ -88,7 +103,7 @@ public class VistaTiposCombustible extends JFrame {
         panelBotones.add(btnLimpiar);
         panelBotones.add(btnCargarSeleccionado);
 
-        modeloTabla = new DefaultTableModel(new Object[]{"Codigo", "Nombre", "Nivel Minimo"}, 0) {
+        modeloTabla = new DefaultTableModel(new Object[]{"Codigo", "Nombre", "Nivel Minimo", "Precio por galon", "Stock (galones)"}, 0) {
             public boolean isCellEditable(int fila, int columna) {
                 return false;
             }
@@ -105,6 +120,11 @@ public class VistaTiposCombustible extends JFrame {
 
         getContentPane().add(panelSuperior, BorderLayout.NORTH);
         getContentPane().add(scrollTabla, BorderLayout.CENTER);
+        JPanel panelStock = new JPanel(new FlowLayout());
+        panelStock.add(new JLabel("Seleccione un combustible para registrar:"));
+        panelStock.add(Componentes.boton("Bajar galones", this, this::registrarConsumo));
+        panelStock.add(new JLabel("Las compras suman stock automaticamente."));
+        getContentPane().add(panelStock, BorderLayout.SOUTH);
 
         btnRegistrar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -206,6 +226,7 @@ public class VistaTiposCombustible extends JFrame {
         txtCodigo.setText(tipo.getCodigo());
         txtNombre.setText(tipo.getNombre());
         txtNivelMinimo.setText(String.valueOf(tipo.getNivelMinimo()));
+        txtPrecio.setText(tipo.getCostoPorGalon() == null ? "" : tipo.getCostoPorGalon().toString());
     }
 
     private void cargarSeleccionado() {
@@ -223,6 +244,7 @@ public class VistaTiposCombustible extends JFrame {
         txtCodigo.setText(tipo.getCodigo());
         txtNombre.setText(tipo.getNombre());
         txtNivelMinimo.setText(String.valueOf(tipo.getNivelMinimo()));
+        txtPrecio.setText(tipo.getCostoPorGalon() == null ? "" : tipo.getCostoPorGalon().toString());
     }
 
     private TipoCombustible construirDesdeFormulario() {
@@ -243,7 +265,14 @@ public class VistaTiposCombustible extends JFrame {
             mostrarError("El nivel minimo no puede ser negativo.");
             return null;
         }
-        return new TipoCombustible(codigo, nombre, nivelMinimo);
+        TipoCombustible resultado = new TipoCombustible(codigo, nombre, nivelMinimo);
+        try {
+            if (!txtPrecio.getText().trim().isEmpty()) resultado.setCostoPorGalon(Double.valueOf(txtPrecio.getText().trim()));
+        } catch (IllegalArgumentException ex) {
+            mostrarError("El precio por galon debe ser un numero finito y no negativo.");
+            return null;
+        }
+        return resultado;
     }
 
     private void cargarTabla(List<TipoCombustible> lista) {
@@ -253,9 +282,50 @@ public class VistaTiposCombustible extends JFrame {
             modeloTabla.addRow(new Object[]{
                     tipo.getCodigo(),
                     tipo.getNombre(),
-                    tipo.getNivelMinimo()
+                    tipo.getNivelMinimo(),
+                    tipo.getCostoPorGalon() == null ? "No configurado" : tipo.getCostoPorGalon(),
+                    new GestionCombustible().calcularExistencia(tipo.getCodigo())
             });
         }
+    }
+
+    private void actualizarStock() {
+        GestionCombustible combustible = new GestionCombustible();
+        for (int fila = 0; fila < modeloTabla.getRowCount(); fila++) {
+            double stock = combustible.calcularExistencia((String) modeloTabla.getValueAt(fila, 0));
+            if (!Double.valueOf(stock).equals(modeloTabla.getValueAt(fila, 4)))
+                modeloTabla.setValueAt(stock, fila, 4);
+        }
+    }
+
+    private void registrarConsumo() {
+        int fila = tablaTipos.getSelectedRow();
+        if (fila < 0) throw new IllegalArgumentException("Seleccione un tipo de combustible en la tabla.");
+        int modelo = tablaTipos.convertRowIndexToModel(fila);
+        String codigo = (String) modeloTabla.getValueAt(modelo, 0);
+        GestionCombustible combustible = new GestionCombustible();
+        JTextField cantidad = new JTextField();
+        SelectorResponsable responsable = new SelectorResponsable();
+        JPanel formulario = new JPanel(new GridLayout(0, 2, 8, 8));
+        formulario.add(new JLabel("Combustible:")); formulario.add(new JLabel("" + modeloTabla.getValueAt(modelo, 1)));
+        formulario.add(new JLabel("Stock actual (galones):")); formulario.add(new JLabel("" + combustible.calcularExistencia(codigo)));
+        formulario.add(new JLabel("Galones a retirar:")); formulario.add(cantidad);
+        formulario.add(new JLabel("Responsable:")); formulario.add(responsable);
+        if (JOptionPane.showConfirmDialog(this, formulario,
+                "Consumo de galones",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) return;
+        double galones;
+        try { galones = Double.parseDouble(cantidad.getText().trim()); }
+        catch (NumberFormatException ex) { throw new IllegalArgumentException("Ingrese una cantidad valida de galones."); }
+        if (!Double.isFinite(galones) || galones <= 0)
+            throw new IllegalArgumentException("Los galones deben ser un numero finito mayor que cero.");
+        if (responsable.getText().trim().isEmpty()) throw new IllegalArgumentException("Indique el responsable.");
+        MovimientoCombustible movimiento = new MovimientoCombustible(GeneradorId.generarId("MOV"), codigo,
+                TipoMovimientoCombustible.SALIDA, galones, FechaUtil.hoy(), responsable.getText().trim());
+        Componentes.comprobar(combustible.registrarSalida(movimiento));
+        actualizarStock();
+        JOptionPane.showMessageDialog(this, "Movimiento registrado. Stock disponible: "
+                + combustible.calcularExistencia(codigo) + " galones.");
     }
 
     private void limpiarCampos() {
@@ -263,6 +333,7 @@ public class VistaTiposCombustible extends JFrame {
         txtCodigo.setText("");
         txtNombre.setText("");
         txtNivelMinimo.setText("");
+        txtPrecio.setText("");
     }
 
     private void mostrarError(String mensaje) {

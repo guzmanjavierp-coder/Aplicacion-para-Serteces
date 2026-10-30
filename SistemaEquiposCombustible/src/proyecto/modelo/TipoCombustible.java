@@ -19,11 +19,20 @@ public class TipoCombustible implements Serializable {
     private String codigo;
     private String nombre;
     private double nivelMinimo;
+    private Double costoPorGalon;
 
     public TipoCombustible(String codigo, String nombre, double nivelMinimo) {
         this.codigo = codigo;
         this.nombre = nombre;
         setNivelMinimo(nivelMinimo);
+    }
+
+    public Double getCostoPorGalon() { return costoPorGalon; }
+
+    public void setCostoPorGalon(Double costoPorGalon) {
+        if (costoPorGalon != null && (!Double.isFinite(costoPorGalon) || costoPorGalon < 0))
+            throw new IllegalArgumentException("El costo por galon debe ser finito y no negativo.");
+        this.costoPorGalon = costoPorGalon;
     }
 
     public String getCodigo() {

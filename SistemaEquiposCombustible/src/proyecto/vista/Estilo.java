@@ -73,7 +73,7 @@ public final class Estilo {
             combo.setRenderer(new DefaultListCellRenderer() {
                 @Override public Component getListCellRendererComponent(JList<?> lista, Object valor, int indice, boolean seleccionado, boolean foco) {
                     if (valor instanceof proyecto.modelo.Equipo) {
-                        proyecto.modelo.Equipo e=(proyecto.modelo.Equipo)valor; valor=e.getCodigo()+" - "+e.getNombre();
+                        proyecto.modelo.Equipo e=(proyecto.modelo.Equipo)valor; valor=e.getNombre();
                     } else if (valor instanceof proyecto.modelo.Categoria) {
                         proyecto.modelo.Categoria c=(proyecto.modelo.Categoria)valor; valor=c.getCodigo()+" - "+c.getNombre();
                     } else if (valor instanceof proyecto.modelo.TipoCombustible) {

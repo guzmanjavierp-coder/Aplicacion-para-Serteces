@@ -13,8 +13,9 @@ public class VistaProveedores extends JFrame {
     private final GestionProveedores gestion = new GestionProveedores();
     private final JTextField codigo = new JTextField(), nombre = new JTextField(), contacto = new JTextField();
     private final JTextField telefono = new JTextField(), correo = new JTextField(), direccion = new JTextField(), servicios = new JTextField();
-    private final DefaultTableModel proveedores = Componentes.tabla("Codigo", "Empresa", "Contacto", "Telefono", "Correo", "Direccion", "Servicios");
-    private final DefaultTableModel asociados = Componentes.tabla("Tipo", "ID / Codigo", "Detalle", "Fecha", "Cantidad", "Costo total", "Observaciones");
+    private final DefaultTableModel proveedores = Componentes.tabla("Codigo", "Empresa", "Persona de contacto", "Telefono", "Correo", "Direccion", "Servicios");
+    private final DefaultTableModel asociados = Componentes.tabla("Tipo", "ID / Codigo", "Detalle", "Fecha", "Cantidad", "Costo total", "Observaciones", "Proveedor");
+    private final JLabel proveedorSeleccionado = new JLabel("Proveedor: seleccione una empresa en la tabla superior");
     private final JTable tabla = new JTable(proveedores);
     private final JTable tablaAsociados = new JTable(asociados);
     private final JComboBox<TipoRegistroProveedor> tipo = new JComboBox<>(TipoRegistroProveedor.values());
@@ -24,7 +25,7 @@ public class VistaProveedores extends JFrame {
         setTitle("Proveedores y registros asociados"); setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(1200, 720); setLocationRelativeTo(null);
         JPanel formulario = new JPanel(new GridLayout(6, 2, 6, 6));
-        String[] etiquetas = {"Empresa", "Contacto", "Telefono", "Correo (opcional)", "Direccion", "Productos / servicios"};
+        String[] etiquetas = {"Empresa", "Persona de contacto", "Telefono", "Correo (opcional)", "Direccion", "Productos / servicios"};
         JTextField[] campos = {nombre, contacto, telefono, correo, direccion, servicios};
         for (int i = 0; i < campos.length; i++) { formulario.add(new JLabel(etiquetas[i])); formulario.add(campos[i]); }
         JPanel botones = new JPanel(new FlowLayout());
@@ -41,7 +42,7 @@ public class VistaProveedores extends JFrame {
         JPanel superior = new JPanel(new BorderLayout()); superior.add(formulario); superior.add(botones, BorderLayout.SOUTH);
         superior.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10)); add(superior, BorderLayout.NORTH);
         JPanel relaciones = new JPanel(new FlowLayout());
-        relaciones.add(new JLabel("Vincular proveedor del formulario con:")); relaciones.add(tipo); relaciones.add(registro);
+        relaciones.add(proveedorSeleccionado); relaciones.add(new JLabel("Vincular con:")); relaciones.add(tipo); relaciones.add(registro);
         relaciones.add(Componentes.boton("Asociar", this, () -> {
             Componentes.comprobar(gestion.asociar(codigo.getText().trim(), (TipoRegistroProveedor) tipo.getSelectedItem(), (String) registro.getSelectedItem())); consultar();
         }));
@@ -55,14 +56,21 @@ public class VistaProveedores extends JFrame {
         JPanel inferior = new JPanel(new BorderLayout()); inferior.add(relaciones, BorderLayout.NORTH); inferior.add(new JScrollPane(tablaAsociados));
         JSplitPane division = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(tabla), inferior);
         division.setResizeWeight(0.45); add(division);
+        tablaAsociados.getTableHeader().setToolTipText("Fecha del servicio o compra; en equipos, fecha de asociacion al proveedor.");
         tabla.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && tabla.getSelectedRow() >= 0) Componentes.ejecutar(this, () -> {
                 codigo.setText(""+proveedores.getValueAt(tabla.getSelectedRow(), 0)); consultar();
             });
         });
         tipo.addActionListener(e -> Componentes.ejecutar(this, this::cargarRegistros));
-        listar(); cargarRegistros();
         Estilo.aplicar(this);
+        registro.setRenderer(new DefaultListCellRenderer() {
+            @Override public Component getListCellRendererComponent(JList<?> lista, Object valor, int indice, boolean seleccionado, boolean foco) {
+                String texto = valor == null ? "" : etiquetaRegistro(valor.toString());
+                return super.getListCellRendererComponent(lista, texto, indice, seleccionado, foco);
+            }
+        });
+        listar(); cargarRegistros();
     }
     private Proveedor construir() {
         return new Proveedor(codigo.getText().trim(), nombre.getText().trim(), contacto.getText().trim(), telefono.getText().trim(), correo.getText().trim(), direccion.getText().trim(), servicios.getText().trim());
@@ -73,6 +81,7 @@ public class VistaProveedores extends JFrame {
     }
     private void limpiar() {
         tabla.clearSelection(); codigo.setText("");
+        proveedorSeleccionado.setText("Proveedor: seleccione una empresa en la tabla superior");
         for (JTextField c : new JTextField[]{nombre, contacto, telefono, correo, direccion, servicios}) c.setText("");
         codigo.setEditable(true); asociados.setRowCount(0); cargarRegistros();
     }
@@ -80,30 +89,55 @@ public class VistaProveedores extends JFrame {
         Proveedor p = gestion.buscarPorCodigo(codigo.getText().trim());
         if (p == null) throw new IllegalArgumentException("El proveedor no existe.");
         codigo.setText(p.getCodigo()); codigo.setEditable(false);
+        proveedorSeleccionado.setText("Proveedor: " + p.getEmpresa() + " (" + p.getCodigo() + ")");
         nombre.setText(p.getEmpresa()); contacto.setText(p.getContacto()); telefono.setText(p.getTelefono());
         correo.setText(p.getCorreo()); direccion.setText(p.getDireccion()); servicios.setText(p.getServicios());
         asociados.setRowCount(0);
         for (AsociacionProveedor a : gestion.consultarAsociaciones(p.getCodigo())) {
-            Object[] fila = {a.getTipo(), a.getIdRegistro(), "Registro eliminado", "", "", "", ""};
+            Object[] fila = {a.getTipo(), a.getIdRegistro(), "Registro eliminado", fechaAsociacion(a), "", "", ""};
             switch (a.getTipo()) {
                 case EQUIPO:
                     Equipo equipo = new GestionEquipos().buscarPorCodigo(a.getIdRegistro());
-                    if (equipo != null) fila = new Object[]{a.getTipo(), a.getIdRegistro(), equipo.getNombre()+" / "+equipo.getUbicacion(), "", equipo.getCantidad(), "", equipo.getDescripcion()};
+                    if (equipo != null) fila = new Object[]{a.getTipo(), a.getIdRegistro(), equipo.getNombre()+" / "+equipo.getUbicacion(), fechaAsociacion(a), equipo.getCantidad(), "", equipo.getDescripcion()};
                     break;
                 case MANTENIMIENTO:
                     for (Mantenimiento m : new GestionMantenimientos().listar()) if (m.getId().equals(a.getIdRegistro()))
-                        fila = new Object[]{a.getTipo(), m.getId(), m.getCodigoEquipo()+" / "+m.getTipo(), FechaUtil.formatear(m.getFecha()), "", m.tieneCostoRegistrado() ? m.getCosto() : "No registrado", m.getObservaciones()};
+                        fila = new Object[]{a.getTipo(), m.getId(), proyecto.util.NombreEquipo.mostrar(m.getCodigoEquipo())+" / "+m.getTipo(), FechaUtil.formatear(m.getFecha()), "", m.tieneCostoRegistrado() ? m.getCosto() : "No registrado", m.getObservaciones()};
                     break;
                 case REPARACION:
                     for (Reparacion r : new GestionReparaciones().listar()) if (r.getId().equals(a.getIdRegistro()))
-                        fila = new Object[]{a.getTipo(), r.getId(), r.getCodigoEquipo()+" / "+r.getDescripcion(), FechaUtil.formatear(r.getFecha()), "", r.getCosto(), r.getObservaciones()};
+                        fila = new Object[]{a.getTipo(), r.getId(), proyecto.util.NombreEquipo.mostrar(r.getCodigoEquipo())+" / "+r.getDescripcion(), FechaUtil.formatear(r.getFecha()), "", r.getCosto(), r.getObservaciones()};
                     break;
             }
-            asociados.addRow(fila);
+            Object[] filaConProveedor = java.util.Arrays.copyOf(fila, 8);
+            filaConProveedor[7] = p.getEmpresa();
+            asociados.addRow(filaConProveedor);
         }
         for (CompraCombustible c : new GestionCompras().buscarPorProveedor(p.getCodigo()))
-            asociados.addRow(new Object[]{"COMPRA", c.getId(), c.getCodigoTipoCombustible(), FechaUtil.formatear(c.getFecha()), c.getCantidad(), c.getCostoTotal(), "Responsable: "+c.getResponsable()});
+            asociados.addRow(new Object[]{"COMPRA", c.getId(), c.getCodigoTipoCombustible(), FechaUtil.formatear(c.getFecha()), c.getCantidad(), c.getCostoTotal(), "Responsable: "+c.getResponsable(), p.getEmpresa()});
     }
+    // En equipos se muestra la fecha del vinculo; en servicios y compras, la de la operacion.
+    private String fechaAsociacion(AsociacionProveedor asociacion) {
+        return asociacion.getFechaAsociacion() == null ? "No registrada" : FechaUtil.formatear(asociacion.getFechaAsociacion());
+    }
+
+    private String etiquetaRegistro(String id) {
+        switch ((TipoRegistroProveedor) tipo.getSelectedItem()) {
+            case EQUIPO:
+                Equipo equipo = new GestionEquipos().buscarPorCodigo(id);
+                return equipo == null ? "Equipo no disponible" : equipo.getNombre();
+            case MANTENIMIENTO:
+                for (Mantenimiento m : new GestionMantenimientos().listar()) if (m.getId().equals(id))
+                    return proyecto.util.NombreEquipo.mostrar(m.getCodigoEquipo()) + " / " + m.getTipo() + " (" + id + ")";
+                break;
+            case REPARACION:
+                for (Reparacion r : new GestionReparaciones().listar()) if (r.getId().equals(id))
+                    return proyecto.util.NombreEquipo.mostrar(r.getCodigoEquipo()) + " / " + r.getDescripcion() + " (" + id + ")";
+                break;
+        }
+        return id;
+    }
+
     private void cargarRegistros() {
         registro.removeAllItems();
         switch ((TipoRegistroProveedor) tipo.getSelectedItem()) {

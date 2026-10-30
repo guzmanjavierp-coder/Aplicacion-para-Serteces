@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import proyecto.modelo.Equipo;
+import proyecto.modelo.EstadoEquipo;
 import proyecto.modelo.Mantenimiento;
 import proyecto.persistencia.ArchivoEquipos;
 import proyecto.persistencia.ArchivoMantenimientos;
@@ -36,8 +37,24 @@ public class GestionMantenimientos {
         if (buscarEnLista(mantenimientos, mantenimiento.getId()) != null) {
             return "Ya existe un mantenimiento con ese ID.";
         }
+        List<Equipo> equipos = archivoEquipos.leer();
+        for (Equipo equipo : equipos) {
+            if (equipo.getCodigo().equals(mantenimiento.getCodigoEquipo())) {
+                equipo.setEstado(EstadoEquipo.EN_MANTENIMIENTO);
+                break;
+            }
+        }
         mantenimientos.add(mantenimiento);
         archivoMantenimientos.guardar(mantenimientos);
+        try {
+            archivoEquipos.guardar(equipos);
+        } catch (IllegalStateException ex) {
+            // Si no se pudo actualizar el equipo, deshacer el registro nuevo.
+            mantenimientos.remove(mantenimiento);
+            try { archivoMantenimientos.guardar(mantenimientos); }
+            catch (IllegalStateException falloReversion) { ex.addSuppressed(falloReversion); }
+            throw ex;
+        }
         return null;
     }
 

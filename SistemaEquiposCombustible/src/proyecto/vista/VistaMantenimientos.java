@@ -344,7 +344,7 @@ public class VistaMantenimientos extends JFrame {
             Mantenimiento mantenimiento = lista.get(i);
             modeloTabla.addRow(new Object[]{
                     mantenimiento.getId(),
-                    mantenimiento.getCodigoEquipo(),
+                    proyecto.util.NombreEquipo.mostrar(mantenimiento.getCodigoEquipo()),
                     FechaUtil.formatear(mantenimiento.getFecha()),
                     mantenimiento.getTipo(),
                     mantenimiento.getObservaciones(),

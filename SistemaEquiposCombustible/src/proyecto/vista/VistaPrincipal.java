@@ -24,6 +24,7 @@ public class VistaPrincipal extends JFrame {
         {"Alertas de inventario", "Consulta los combustibles en nivel bajo", "Combustible"},
         {"Proveedores", "Empresas y sus registros asociados", "Administración"},
         {"Responsables", "Consulta y agrega responsables", "Administración"},
+        {"Ubicaciones", "Agrega, edita y elimina lugares", "Equipos"},
         {"Reportes y consumo", "Consulta y exporta tus reportes", "Administración"}
     };
     public VistaPrincipal() {
@@ -102,6 +103,7 @@ public class VistaPrincipal extends JFrame {
             case 7: ventana=new VistaAlertas(); break;
             case 8: ventana=new VistaProveedores(); break;
             case 9: ventana=new VistaResponsables(); break;
+            case 10: ventana=new VistaUbicaciones(); break;
             default: ventana=new VistaReportes(); break;
         }
         ventana.setVisible(true);

@@ -1,0 +1,8 @@
+﻿"Clase de fila";"Servicio";"ID";"Codigo equipo";"Equipo";"Fecha";"Descripcion / tipo";"Costo registrado";"Observaciones";"Inicio del periodo";"Fin del periodo";"Filtro equipo";"Filtro servicio";"Cantidad de registros";"Sin costo registrado"
+"DETALLE";"Mantenimiento";"LEGACY";"EQ1";"Equipo EQ1";"01/01/2026";"PREVENTIVO";"No registrado";"Registro de la version anterior";"01/01/2026";"31/01/2026";"EQ1";"Ambos servicios";"1";"1"
+"DETALLE";"Mantenimiento";"M2";"EQ1";"Equipo EQ1";"10/01/2026";"PREVENTIVO";"125.50";"Revision de prueba";"01/01/2026";"31/01/2026";"EQ1";"Ambos servicios";"1";"0"
+"DETALLE";"Reparacion";"R1";"EQ1";"Equipo EQ1";"31/01/2026";"Cambio; ""sello""";"74.50";"Revisado
+Sin fugas";"01/01/2026";"31/01/2026";"EQ1";"Ambos servicios";"1";"0"
+"SUBTOTAL";"Mantenimientos";"";"";"";"";"";"125.50";"Solo costos registrados; los desconocidos no se consideran cero.";"01/01/2026";"31/01/2026";"EQ1";"Ambos servicios";"2";"1"
+"SUBTOTAL";"Reparaciones";"";"";"";"";"";"74.50";"Solo costos registrados; los desconocidos no se consideran cero.";"01/01/2026";"31/01/2026";"EQ1";"Ambos servicios";"1";"0"
+"TOTAL";"TOTAL REGISTRADO";"";"";"";"";"";"200.00";"Solo costos registrados; los desconocidos no se consideran cero.";"01/01/2026";"31/01/2026";"EQ1";"Ambos servicios";"3";"1"

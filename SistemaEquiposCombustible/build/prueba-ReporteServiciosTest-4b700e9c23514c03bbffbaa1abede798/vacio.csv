@@ -1,0 +1,4 @@
+﻿"Clase de fila";"Servicio";"ID";"Codigo equipo";"Equipo";"Fecha";"Descripcion / tipo";"Costo registrado";"Observaciones";"Inicio del periodo";"Fin del periodo";"Filtro equipo";"Filtro servicio";"Cantidad de registros";"Sin costo registrado"
+"SUBTOTAL";"Mantenimientos";"";"";"";"";"";"0.00";"Solo costos registrados; los desconocidos no se consideran cero.";"31/03/2026";"30/04/2026";"Todos";"Ambos servicios";"0";"0"
+"SUBTOTAL";"Reparaciones";"";"";"";"";"";"0.00";"Solo costos registrados; los desconocidos no se consideran cero.";"31/03/2026";"30/04/2026";"Todos";"Ambos servicios";"0";"0"
+"TOTAL";"TOTAL REGISTRADO";"";"";"";"";"";"0.00";"Solo costos registrados; los desconocidos no se consideran cero.";"31/03/2026";"30/04/2026";"Todos";"Ambos servicios";"0";"0"

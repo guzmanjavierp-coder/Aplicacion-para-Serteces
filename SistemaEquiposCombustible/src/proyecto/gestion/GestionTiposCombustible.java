@@ -25,6 +25,7 @@ public class GestionTiposCombustible {
         TipoCombustible existente = buscarEnLista(tipos, tipo.getCodigo());
         if (existente == null) return "No existe un tipo de combustible con ese codigo.";
         existente.setNombre(tipo.getNombre()); existente.setNivelMinimo(tipo.getNivelMinimo());
+        existente.setCostoPorGalon(tipo.getCostoPorGalon());
         archivoTiposCombustible.guardar(tipos); return null;
     }
     public String eliminar(String codigo) {

@@ -87,13 +87,51 @@ public class AjustesTest {
             verificar(responsables.registrar(" ") != null, "Responsable vacio");
             correcto(new GestionCategorias().registrar(new Categoria("CAT", "Herramientas", "Prueba")));
             correcto(new GestionEquipos().registrar(new Equipo("EQ", "Equipo", "Descripcion", "CAT", 1, "Bodega", EstadoEquipo.values()[0], "Ana")));
+            verificar(proyecto.util.GeneradorId.generarId("EQ").equals("EQ0001"), "Primer consecutivo de equipo");
+            correcto(new GestionEquipos().registrar(new Equipo("EQ002", "Equipo temporal", "Descripcion", "CAT", 1, "Bodega", EstadoEquipo.values()[0], "Ana")));
+            verificar(proyecto.util.GeneradorId.generarId("EQ").equals("EQ0003"), "Continua despues de codigos existentes");
+            correcto(new GestionEquipos().eliminar("EQ002"));
+            verificar(proyecto.util.GeneradorId.generarId("EQ").equals("EQ0004"), "Consecutivo persiste sin reutilizar eliminados");
+            verificar(new GestionEquipos().buscarPorCodigo("EQ").toString().equals("Equipo"), "Nombre visible del equipo");
+            verificar(proyecto.util.NombreEquipo.mostrar("EQ").equals("Equipo"), "Nombre para tablas y consultas");
+            verificar(proyecto.util.NombreEquipo.mostrar("NO").contains("Equipo no disponible"), "Referencia antigua identificable");
+            verificar(proyecto.util.GeneradorId.generarId("MANT").equals("MANT0001"), "Formato consecutivo de mantenimiento");
+            verificar(proyecto.util.GeneradorId.generarId("MANT").equals("MANT0002"), "Siguiente consecutivo de mantenimiento");
+            for (String prefijo : new String[]{"CAT", "COMB", "PROV", "REP", "MOV", "COMPRA"}) {
+                String primero = proyecto.util.GeneradorId.generarId(prefijo);
+                String siguiente = proyecto.util.GeneradorId.generarId(prefijo);
+                verificar(primero.matches(prefijo + "[0-9]{4,}"), "Cuatro digitos para " + prefijo);
+                verificar(Long.parseLong(siguiente.substring(prefijo.length())) == Long.parseLong(primero.substring(prefijo.length())) + 1, "Consecutivo independiente para " + prefijo);
+            }
+            GestionUbicaciones ubicaciones = new GestionUbicaciones();
+            verificar(ubicaciones.listar().contains("Bodega"), "Importa ubicaciones anteriores");
+            verificar(ubicaciones.registrar(" bODEGA ") != null, "Evita duplicados de ubicacion");
+            verificar(ubicaciones.registrar(" ") != null, "Rechaza ubicacion vacia");
+            correcto(ubicaciones.registrar("Patio"));
+            verificar(new GestionUbicaciones().listar().contains("Patio"), "Persiste ubicaciones");
+            verificar(ubicaciones.modificar("Bodega", "Patio") != null, "Evita duplicados al editar");
+            correcto(ubicaciones.modificar("Bodega", "Bodega principal"));
+            verificar(new GestionEquipos().buscarPorCodigo("EQ").getUbicacion().equals("Bodega principal"), "Renombra ubicacion en equipos");
+            verificar(!ubicaciones.listar().contains("Bodega"), "No reaparece el nombre anterior");
+            verificar(ubicaciones.eliminar("Bodega principal") != null, "Protege ubicaciones en uso");
+            correcto(ubicaciones.eliminar("Patio"));
+            verificar(!new GestionUbicaciones().listar().contains("Patio"), "Persiste eliminacion");
             verificar(responsables.listar().contains("Ana"), "Responsables de equipos");
 
             SwingUtilities.invokeAndWait(() -> {
                 java.util.List<JFrame> ventanas = new ArrayList<>();
                 try {
+                    GestionTiposCombustible catalogo = new GestionTiposCombustible();
+                    TipoCombustible diesel = catalogo.buscarPorCodigo("D"); diesel.setCostoPorGalon(7.35); correcto(catalogo.modificar(diesel));
+                    TipoCombustible gasolina = catalogo.buscarPorCodigo("G"); gasolina.setCostoPorGalon(34.0); correcto(catalogo.modificar(gasolina));
                     VistaCompras vista = new VistaCompras(); ventanas.add(vista);
-                    texto(vista, "cantidad", "2.5"); texto(vista, "costo", "7.35"); responsable(vista, "responsable", "Carlos");
+                    verificar(!((JTextField)campo(vista, "costo")).isEditable(), "Precio automatico no editable");
+                    verificar(((JTextField)campo(vista, "costo")).getText().equals("7.35"), "Precio cargado desde catalogo");
+                    JComboBox<?> tipoCompra = (JComboBox<?>)campo(vista, "tipo");
+                    tipoCompra.setSelectedIndex(1);
+                    verificar(((JTextField)campo(vista, "costo")).getText().equals("34.00"), "Precio cambia con combustible");
+                    tipoCompra.setSelectedIndex(0);
+                    texto(vista, "cantidad", "2.5"); responsable(vista, "responsable", "Carlos");
                     verificar(((JLabel)campo(vista, "total")).getText().equals("18.38"), "Total automatico visible");
                     boton(vista, "Registrar compra y entrada");
                     CompraCombustible registrada = compras.listar().get(compras.listar().size()-1);
@@ -117,10 +155,35 @@ public class AjustesTest {
                     for (String c : new String[]{"nombre", "contacto", "telefono", "direccion", "servicios"}) texto(proveedores, c, "Empresa Prueba");
                     texto(proveedores, "correo", "empresa@example.com"); boton(proveedores, "Registrar");
                     Proveedor p = new GestionProveedores().listar().get(2);
-                    verificar(p.getCodigo().startsWith("PROV-") && p.getEmpresa().equals("Empresa Prueba"), "Codigo automatico y empresa de proveedor");
+                    verificar(p.getCodigo().matches("PROV[0-9]{4,}") && p.getEmpresa().equals("Empresa Prueba"), "Codigo automatico y empresa de proveedor");
+                    @SuppressWarnings("unchecked") JComboBox<String> selectorRegistro = (JComboBox<String>) campo(proveedores, "registro");
+                    Component opcionEquipo = selectorRegistro.getRenderer().getListCellRendererComponent(new JList<String>(), "EQ", 0, false, false);
+                    verificar(((JLabel)opcionEquipo).getText().equals("Equipo"), "Selector de proveedor muestra nombre sin codigo tras aplicar estilo");
+                    verificar(selectorRegistro.getSelectedItem().equals("EQ"), "Selector conserva codigo interno para asociar");
                     imagen(proveedores, "proveedores");
-                    ventanas.add(new VistaCategorias()); ventanas.add(new VistaTiposCombustible()); ventanas.add(new VistaEquipos());
-                    ventanas.add(new VistaMantenimientos()); ventanas.add(new VistaReparaciones()); ventanas.add(new VistaCombustible());
+                    VistaTiposCombustible vistaTipos = new VistaTiposCombustible(); ventanas.add(vistaTipos);
+                    JTable stockTipos = (JTable) campo(vistaTipos, "tablaTipos");
+                    int filaDiesel = -1;
+                    for (int i = 0; i < stockTipos.getRowCount(); i++) if ("D".equals(stockTipos.getValueAt(i, 0))) filaDiesel = i;
+                    GestionCombustible inventario = new GestionCombustible();
+                    double saldoAntes = inventario.calcularExistencia("D");
+                    verificar(((Number)stockTipos.getValueAt(filaDiesel, 4)).doubleValue() == saldoAntes, "Tipos muestra stock de compras existentes");
+                    stockTipos.setRowSelectionInterval(filaDiesel, filaDiesel);
+                    correcto(inventario.registrarEntrada(new MovimientoCombustible("STOCK-ENT", "D", TipoMovimientoCombustible.ENTRADA, 4, FechaUtil.hoy(), "Prueba")));
+                    java.lang.reflect.Method refrescar = VistaTiposCombustible.class.getDeclaredMethod("actualizarStock"); refrescar.setAccessible(true); refrescar.invoke(vistaTipos);
+                    verificar(((Number)stockTipos.getValueAt(filaDiesel, 4)).doubleValue() == saldoAntes + 4, "Tipos actualiza entradas con ventana abierta");
+                    correcto(inventario.registrarSalida(new MovimientoCombustible("STOCK-SAL", "D", TipoMovimientoCombustible.SALIDA, 2, FechaUtil.hoy(), "Prueba")));
+                    refrescar.invoke(vistaTipos);
+                    verificar(((Number)stockTipos.getValueAt(filaDiesel, 4)).doubleValue() == saldoAntes + 2, "Tipos descuenta consumo");
+                    verificar(stockTipos.getSelectedRow() == filaDiesel, "Actualizar stock conserva seleccion");
+                    verificar(inventario.registrarSalida(new MovimientoCombustible("STOCK-EXCESO", "D", TipoMovimientoCombustible.SALIDA, saldoAntes + 100, FechaUtil.hoy(), "Prueba")) != null, "No permite retirar mas stock del disponible");
+                    imagen(vistaTipos, "tipos-stock");
+                    ventanas.add(new VistaUbicaciones()); ventanas.add(new VistaCategorias()); ventanas.add(new VistaEquipos());
+                    VistaMantenimientos vistaMant = new VistaMantenimientos();
+                    @SuppressWarnings("unchecked") JComboBox<Equipo> selectorEquipo = (JComboBox<Equipo>) campo(vistaMant, "comboEquipo");
+                    JLabel etiquetaEquipo = (JLabel) selectorEquipo.getRenderer().getListCellRendererComponent(new JList<Equipo>(), selectorEquipo.getItemAt(0), 0, false, false);
+                    verificar(etiquetaEquipo.getText().equals("Equipo"), "Selector de mantenimiento muestra solo nombre");
+                    ventanas.add(vistaMant); ventanas.add(new VistaReparaciones()); ventanas.add(new VistaCombustible());
                     ventanas.add(new VistaResponsables()); ventanas.add(new VistaPrincipal());
                     for (JFrame ventana : ventanas) {
                         for (Component c : componentes(ventana.getContentPane())) if (c instanceof JLabel) {
